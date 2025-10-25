@@ -1,0 +1,31 @@
+#env files  
+.env
+
+#python files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+*.pyz
+*.pywz
+*.pyzw
+*.pyz
+
+#pdf files
+*.pdf
+*.PDF
+*.pdf.gz
+*.PDF.gz
+*.pdf.bz2
+*.PDF.bz2
+*.pdf.xz
+*.PDF.xz
+*.pdf.zip
+*.PDF.zip
+
+#venv files
+venv/
+
+#database file
+conversations.db

@@ -1,0 +1,13 @@
+langchain
+langchain-community
+openai
+mistralai
+pinecone-client
+langchain-pinecone
+langchain-openai
+langchain-mistral
+python-dotenv
+pypdf
+fastapi
+uvicorn
+python-multipart
