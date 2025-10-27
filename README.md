@@ -50,7 +50,7 @@ uvicorn main:app --reload
 ```json
 {
     "question": "Qui est le personnage principal d'Harry Potter ?",
-    "username": "utilisateur1",
+    "email": "user@example.com",
     "conversation_id": null
 }
 ```
@@ -60,7 +60,7 @@ uvicorn main:app --reload
 {
     "answer": "Le personnage principal d'Harry Potter est Harry Potter lui-même...",
     "conversation_id": 1,
-    "username": "utilisateur1"
+    "email": "user@example.com"
 }
 ```
 
@@ -69,13 +69,13 @@ uvicorn main:app --reload
 
 ```json
 {
-    "username": "utilisateur1",
+    "email": "user@example.com",
     "title": "Questions sur Harry Potter"
 }
 ```
 
 ### 3. Récupérer les conversations d'un utilisateur
-**GET** `/conversations/{username}`
+**GET** `/conversations/{email}`
 
 **Réponse :**
 ```json
@@ -91,7 +91,7 @@ uvicorn main:app --reload
 ```
 
 ### 4. Récupérer les messages d'une conversation
-**GET** `/conversations/{username}/{conversation_id}`
+**GET** `/conversations/{email}/{conversation_id}`
 
 **Réponse :**
 ```json
@@ -122,7 +122,7 @@ curl -X POST "http://localhost:8000/ask" \
   -H "Content-Type: application/json" \
   -d '{
     "question": "Qui est le personnage principal d'\''Harry Potter ?",
-    "username": "utilisateur1"
+    "email": "user@example.com"
   }'
 ```
 
@@ -132,14 +132,14 @@ curl -X POST "http://localhost:8000/ask" \
   -H "Content-Type: application/json" \
   -d '{
     "question": "Quel est le nom de son meilleur ami ?",
-    "username": "utilisateur1",
+    "email": "user@example.com",
     "conversation_id": 1
   }'
 ```
 
 ### Récupérer l'historique
 ```bash
-curl -X GET "http://localhost:8000/conversations/utilisateur1"
+curl -X GET "http://localhost:8000/conversations/user@example.com"
 ```
 
 ## 🗄️ Base de données Supabase

@@ -40,11 +40,11 @@ app.add_middleware(
 # Modèles Pydantic pour les requêtes
 class QuestionRequest(BaseModel):
     question: str
-    username: str = "default_user"
+    email: str  # Email de l'utilisateur
     conversation_id: int = None
 
 class ConversationRequest(BaseModel):
-    username: str
+    email: str  # Email de l'utilisateur
     title: str = None
 
 @app.post("/ingest")
@@ -58,8 +58,8 @@ def delete(index_name: str):
 @app.post("/ask")
 def ask(request: QuestionRequest):
     try:
-        # Créer ou récupérer l'utilisateur
-        user_id = db.create_user(request.username)
+        # Créer ou récupérer l'utilisateur par email
+        user_id = db.create_user(request.email)
         
         # Créer une nouvelle conversation si nécessaire
         if request.conversation_id is None:
@@ -89,7 +89,7 @@ def ask(request: QuestionRequest):
             return {
                 "answer": answer,
                 "conversation_id": conversation_id,
-                "username": request.username
+                "email": request.email
             }
         
         # Construire le contexte
@@ -116,18 +116,18 @@ Answer:"""
         return {
             "answer": answer,
             "conversation_id": conversation_id,
-            "username": request.username
+            "email": request.email
         }
     
     except Exception as e:
         return {"error": f"Erreur lors du traitement: {str(e)}"}
 
 # Endpoints pour l'historique des conversations
-@app.get("/conversations/{username}")
-def get_conversations(username: str):
-    """Récupère toutes les conversations d'un utilisateur"""
+@app.get("/conversations/{email}")
+def get_conversations(email: str):
+    """Récupère toutes les conversations d'un utilisateur par email"""
     try:
-        user_id = db.get_user_by_username(username)
+        user_id = db.get_user_by_username(email)
         if not user_id:
             raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
         
@@ -136,11 +136,11 @@ def get_conversations(username: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/conversations/{username}/{conversation_id}")
-def get_conversation_messages(username: str, conversation_id: int):
-    """Récupère tous les messages d'une conversation"""
+@app.get("/conversations/{email}/{conversation_id}")
+def get_conversation_messages(email: str, conversation_id: int):
+    """Récupère tous les messages d'une conversation par email"""
     try:
-        user_id = db.get_user_by_username(username)
+        user_id = db.get_user_by_username(email)
         if not user_id:
             raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
         
@@ -151,13 +151,13 @@ def get_conversation_messages(username: str, conversation_id: int):
 
 @app.post("/conversations")
 def create_conversation(request: ConversationRequest):
-    """Crée une nouvelle conversation"""
+    """Crée une nouvelle conversation pour un utilisateur"""
     try:
-        user_id = db.create_user(request.username)
+        user_id = db.create_user(request.email)
         conversation_id = db.create_conversation(user_id, request.title)
         return {
             "conversation_id": conversation_id,
-            "username": request.username,
+            "email": request.email,
             "title": request.title
         }
     except Exception as e:

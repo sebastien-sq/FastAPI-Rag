@@ -1,11 +1,12 @@
 -- Script SQL pour créer les tables dans Supabase
 -- Exécutez ce script dans l'éditeur SQL de votre tableau de bord Supabase
 
--- Table des utilisateurs
+-- Table des utilisateurs (username contient l'email)
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
-    username TEXT UNIQUE NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    username TEXT UNIQUE NOT NULL, -- Email de l'utilisateur
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    CONSTRAINT email_format CHECK (username ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
 );
 
 -- Table des conversations

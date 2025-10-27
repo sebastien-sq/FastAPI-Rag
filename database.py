@@ -16,18 +16,22 @@ class ConversationDB:
         
         self.client: Client = create_client(supabase_url, supabase_key)
     
-    def create_user(self, username: str) -> int:
-        """Crée un nouvel utilisateur et retourne son ID"""
+    def create_user(self, email: str) -> int:
+        """Crée un nouvel utilisateur avec son email et retourne son ID"""
         try:
+            # Valider le format email basique
+            if '@' not in email or '.' not in email.split('@')[1]:
+                raise ValueError(f"Format email invalide: {email}")
+            
             # Vérifier si l'utilisateur existe déjà
-            existing_user = self.client.table('users').select('id').eq('username', username).execute()
+            existing_user = self.client.table('users').select('id').eq('username', email).execute()
             
             if existing_user.data:
                 return existing_user.data[0]['id']
             
-            # Créer un nouvel utilisateur
+            # Créer un nouvel utilisateur avec l'email
             result = self.client.table('users').insert({
-                'username': username
+                'username': email
             }).execute()
             
             return result.data[0]['id']
@@ -104,12 +108,12 @@ class ConversationDB:
             print(f"Erreur lors de la récupération des messages: {e}")
             raise
     
-    def get_user_by_username(self, username: str) -> Optional[int]:
-        """Récupère l'ID d'un utilisateur par son nom"""
+    def get_user_by_username(self, email: str) -> Optional[int]:
+        """Récupère l'ID d'un utilisateur par son email"""
         try:
             result = self.client.table('users')\
                 .select('id')\
-                .eq('username', username)\
+                .eq('username', email)\
                 .execute()
             
             return result.data[0]['id'] if result.data else None
