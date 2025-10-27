@@ -5,9 +5,11 @@ mistralai
 pinecone-client
 langchain-pinecone
 langchain-openai
-langchain-mistral
 python-dotenv
 pypdf
 fastapi
 uvicorn
 python-multipart
+slowapi
+passlib[bcrypt]
+python-jose[cryptography]

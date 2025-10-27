@@ -4,8 +4,9 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import CharacterTextSplitter
 from langchain_pinecone import PineconeVectorStore
 from mistralai import Mistral
-import pinecone
 from pinecone import Pinecone
+import time
+import random
 
 load_dotenv()
 mistral_api_key = os.getenv("MISTRAL_API_KEY")
@@ -16,8 +17,7 @@ pinecone_index = os.getenv("PINECONE_INDEX_NAME")
 client = Mistral(api_key=mistral_api_key)
 vectorstore = None
 
-import time
-import random
+
 
 def create_embeddings_in_batches(client, texts, batch_size=5, delay_between_batches=1.0):
     """Créer les embeddings par lots avec gestion du rate limit"""
