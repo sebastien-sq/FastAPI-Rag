@@ -10,11 +10,17 @@ class ConversationDB:
         """Initialise la connexion à Supabase"""
         supabase_url = os.getenv("SUPABASE_URL")
         supabase_key = os.getenv("SUPABASE_ANON_KEY")
+        supabase_service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
         
         if not supabase_url or not supabase_key:
             raise ValueError("Les variables d'environnement SUPABASE_URL et SUPABASE_ANON_KEY doivent être définies")
         
         self.client: Client = create_client(supabase_url, supabase_key)
+        
+        # Client avec service_role pour bypasser RLS (optionnel)
+        self.admin_client: Client = None
+        if supabase_service_key:
+            self.admin_client = create_client(supabase_url, supabase_service_key)
     
     def create_user(self, email: str) -> int:
         """Crée un nouvel utilisateur avec son email et retourne son ID"""
@@ -23,14 +29,17 @@ class ConversationDB:
             if '@' not in email or '.' not in email.split('@')[1]:
                 raise ValueError(f"Format email invalide: {email}")
             
+            # Utiliser admin_client si disponible pour bypasser RLS
+            db_client = self.admin_client if self.admin_client else self.client
+            
             # Vérifier si l'utilisateur existe déjà
-            existing_user = self.client.table('users').select('id').eq('username', email).execute()
+            existing_user = db_client.table('users').select('id').eq('username', email).execute()
             
             if existing_user.data:
                 return existing_user.data[0]['id']
             
             # Créer un nouvel utilisateur avec l'email
-            result = self.client.table('users').insert({
+            result = db_client.table('users').insert({
                 'username': email
             }).execute()
             

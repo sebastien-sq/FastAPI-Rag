@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi import UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -6,6 +6,14 @@ from mistralai import Mistral
 from pinecone import Pinecone
 from dotenv import load_dotenv
 from database import ConversationDB
+from auth import (
+    SupabaseAuth, 
+    SignUpRequest, 
+    LoginRequest, 
+    PasswordResetRequest, 
+    UpdatePasswordRequest,
+    get_current_user
+)
 import os
 
 load_dotenv()
@@ -18,6 +26,7 @@ client = Mistral(api_key=mistral_api_key)
 pc = Pinecone(api_key=pinecone_api_key)  
 index = pc.Index(pinecone_index)  
 db = ConversationDB()
+auth = SupabaseAuth()
 app = FastAPI()
 
 
@@ -45,6 +54,134 @@ class QuestionRequest(BaseModel):
 class ConversationRequest(BaseModel):
     email: str  # Email de l'utilisateur
     title: str = None
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+# ==================== ROUTES D'AUTHENTIFICATION ====================
+
+@app.post("/auth/signup")
+def signup(request: SignUpRequest):
+    """
+    Inscription d'un nouvel utilisateur avec email et mot de passe
+    
+    Returns:
+        - user: Informations de l'utilisateur créé
+        - session: Token d'accès et de rafraîchissement
+    """
+    try:
+        result = auth.sign_up(request.email, request.password)
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/auth/login")
+def login(request: LoginRequest):
+    """
+    Connexion d'un utilisateur existant
+    
+    Returns:
+        - user: Informations de l'utilisateur
+        - session: Token d'accès et de rafraîchissement
+    """
+    try:
+        result = auth.login(request.email, request.password)
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/auth/logout")
+def logout(current_user: dict = Depends(get_current_user)):
+    """
+    Déconnexion de l'utilisateur actuel
+    Nécessite un token Bearer dans les headers
+    """
+    try:
+        result = auth.logout(current_user.get("id"))
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/auth/refresh")
+def refresh_token(request: RefreshTokenRequest):
+    """
+    Rafraîchit le token d'accès avec un refresh token
+    
+    Args:
+        refresh_token: Token de rafraîchissement obtenu lors de la connexion
+    
+    Returns:
+        Nouvelle session avec access_token et refresh_token
+    """
+    try:
+        result = auth.refresh_session(request.refresh_token)
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/auth/reset-password")
+def reset_password(request: PasswordResetRequest):
+    """
+    Envoie un email de réinitialisation de mot de passe
+    
+    Args:
+        email: Email de l'utilisateur
+    
+    Returns:
+        Message de confirmation
+    """
+    try:
+        result = auth.reset_password_request(request.email)
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/auth/update-password")
+def update_password(
+    request: UpdatePasswordRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Met à jour le mot de passe de l'utilisateur connecté
+    Nécessite un token Bearer dans les headers
+    
+    Args:
+        new_password: Nouveau mot de passe
+    
+    Returns:
+        Message de confirmation
+    """
+    try:
+        # Le token est déjà vérifié par get_current_user
+        result = auth.update_password(current_user.get("id"), request.new_password)
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/auth/me")
+def get_me(current_user: dict = Depends(get_current_user)):
+    """
+    Récupère les informations de l'utilisateur connecté
+    Nécessite un token Bearer dans les headers
+    
+    Returns:
+        Informations de l'utilisateur
+    """
+    return current_user
+
+# ==================== ROUTES EXISTANTES ====================
 
 @app.post("/ingest")
 def ingest(file: UploadFile = File(...)):
