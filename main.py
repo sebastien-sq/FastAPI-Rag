@@ -20,13 +20,17 @@ index = pc.Index(pinecone_index)
 db = ConversationDB()
 app = FastAPI()
 
+ALLOWED_ORIGINS = [
+    "https://fastapi-rag-jwjn.onrender.com",
+    "http://localhost:8000",
+    "https://react-rag-interface.vercel.app",
+]
+
 # Configuration CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "http://localhost:5174",
+        ALLOWED_ORIGINS
     ],
     allow_credentials=True,
     allow_methods=["*"],
