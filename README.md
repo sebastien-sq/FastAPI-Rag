@@ -1,12 +1,44 @@
-# Guide d'utilisation de l'API RAG avec historique des conversations
+# 🚀 FastAPI RAG - API de Chat Intelligent avec Historique
 
-## Installation
+API RAG (Retrieval-Augmented Generation) avec gestion des conversations et recherche sémantique dans des documents.
+
+## 🛠️ Stack Technique
+
+- **Backend** : FastAPI (Python)
+- **Base de données** : Supabase (PostgreSQL)
+- **Vector Store** : Pinecone
+- **Embeddings** : Mistral AI (`mistral-embed`)
+- **LLM** : Mistral AI (`mistral-small-2506`)
+
+## ⚙️ Configuration
+
+Créez un fichier `.env` à la racine du projet :
+
+```env
+# API Keys Mistral
+MISTRAL_API_KEY=your_mistral_api_key_here
+
+# Pinecone Configuration
+PINECONE_API_KEY=your_pinecone_api_key_here
+PINECONE_INDEX_NAME=your_pinecone_index_name_here
+
+# Supabase Configuration
+SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_KEY=your_supabase_anon_key_here
+```
+
+## 📦 Installation
 
 ```bash
-# Installer les dépendances
+# 1. Installer les dépendances
 pip install -r requirements.txt
 
-# Démarrer l'API
+# 2. Configurer Supabase (exécuter supabase_schema.sql dans votre dashboard)
+
+# 3. Tester la configuration
+python test_supabase_connection.py
+
+# 4. Démarrer l'API
 uvicorn main:app --reload
 ```
 
@@ -110,17 +142,24 @@ curl -X POST "http://localhost:8000/ask" \
 curl -X GET "http://localhost:8000/conversations/utilisateur1"
 ```
 
-## Base de données SQLite
+## 🗄️ Base de données Supabase
 
-La base de données `conversations.db` est créée automatiquement avec les tables :
-- `users` : Utilisateurs
-- `conversations` : Conversations
-- `messages` : Messages des conversations
+Les tables suivantes sont créées dans Supabase :
+- **users** : Gestion des utilisateurs
+- **conversations** : Historique des conversations
+- **messages** : Messages (questions/réponses)
 
-## Fonctionnalités
+## ✨ Fonctionnalités
 
-✅ **Historique complet** : Toutes les questions et réponses sont sauvegardées
-✅ **Multi-utilisateurs** : Chaque utilisateur a son propre historique
-✅ **Conversations persistantes** : Les conversations continuent même après redémarrage
-✅ **Recherche contextuelle** : Le RAG utilise les documents uploadés dans Pinecone
-✅ **API RESTful** : Interface simple pour intégrer dans d'autres applications
+- ✅ **RAG intelligent** : Recherche sémantique dans vos documents via Pinecone
+- ✅ **Historique complet** : Conversations sauvegardées dans Supabase
+- ✅ **Multi-utilisateurs** : Isolation des données par utilisateur
+- ✅ **API RESTful** : Endpoints simples et documentés
+- ✅ **Scalable** : Base de données cloud avec Supabase
+- ✅ **CORS configuré** : Prêt pour le frontend
+
+## 📚 Documentation
+
+- **API** : http://localhost:8000/docs (Swagger UI automatique)
+- **Schéma SQL** : Voir `supabase_schema.sql`
+- **Test** : Utiliser `test_supabase_connection.py` pour vérifier la config
