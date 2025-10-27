@@ -231,7 +231,7 @@ def ask(request: QuestionRequest):
         # Construire le contexte
         context = "\n".join([match['metadata']['text'] for match in results['matches']])
         
-        prompt = f"""Based on the following context, answer the question:
+        prompt = f"""En partant du contexte suivant, réponds à la question uniquement en français:
 
 Context: {context}
 
@@ -241,7 +241,7 @@ Answer:"""
 
         response = client.chat.complete(
             model="mistral-small-2506",
-            messages=[{"role": "user", "content": prompt}]
+            messages=[{"role": "system", "content": "Tu es un assistant de chat qui répond uniquement en français. Traduis les élements étrangers de contexte en français."}, {"role": "user", "content": prompt}]
         )
 
         answer = response.choices[0].message.content
