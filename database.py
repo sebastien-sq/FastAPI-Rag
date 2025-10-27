@@ -51,7 +51,10 @@ class ConversationDB:
     def create_conversation(self, user_id: int, title: str = None) -> int:
         """Crée une nouvelle conversation et retourne son ID"""
         try:
-            result = self.client.table('conversations').insert({
+            # Utiliser admin_client si disponible pour bypasser RLS
+            db_client = self.admin_client if self.admin_client else self.client
+            
+            result = db_client.table('conversations').insert({
                 'user_id': user_id,
                 'title': title
             }).execute()
@@ -64,7 +67,10 @@ class ConversationDB:
     def add_message(self, conversation_id: int, role: str, content: str):
         """Ajoute un message à une conversation"""
         try:
-            self.client.table('messages').insert({
+            # Utiliser admin_client si disponible pour bypasser RLS
+            db_client = self.admin_client if self.admin_client else self.client
+            
+            db_client.table('messages').insert({
                 'conversation_id': conversation_id,
                 'role': role,
                 'content': content
@@ -76,7 +82,10 @@ class ConversationDB:
     def get_conversations(self, user_id: int) -> List[Dict]:
         """Récupère toutes les conversations d'un utilisateur"""
         try:
-            result = self.client.table('conversations')\
+            # Utiliser admin_client si disponible pour bypasser RLS
+            db_client = self.admin_client if self.admin_client else self.client
+            
+            result = db_client.table('conversations')\
                 .select('id, title, created_at')\
                 .eq('user_id', user_id)\
                 .order('created_at', desc=True)\
@@ -98,7 +107,10 @@ class ConversationDB:
     def get_messages(self, conversation_id: int) -> List[Dict]:
         """Récupère tous les messages d'une conversation"""
         try:
-            result = self.client.table('messages')\
+            # Utiliser admin_client si disponible pour bypasser RLS
+            db_client = self.admin_client if self.admin_client else self.client
+            
+            result = db_client.table('messages')\
                 .select('role, content, timestamp')\
                 .eq('conversation_id', conversation_id)\
                 .order('timestamp', desc=False)\
@@ -120,7 +132,10 @@ class ConversationDB:
     def get_user_by_username(self, email: str) -> Optional[int]:
         """Récupère l'ID d'un utilisateur par son email"""
         try:
-            result = self.client.table('users')\
+            # Utiliser admin_client si disponible pour bypasser RLS
+            db_client = self.admin_client if self.admin_client else self.client
+            
+            result = db_client.table('users')\
                 .select('id')\
                 .eq('username', email)\
                 .execute()
@@ -133,11 +148,14 @@ class ConversationDB:
     def delete_conversation(self, conversation_id: int):
         """Supprime une conversation et tous ses messages"""
         try:
+            # Utiliser admin_client si disponible pour bypasser RLS
+            db_client = self.admin_client if self.admin_client else self.client
+            
             # Supprimer d'abord les messages (grâce au CASCADE dans Supabase, cela peut être automatique)
-            self.client.table('messages').delete().eq('conversation_id', conversation_id).execute()
+            db_client.table('messages').delete().eq('conversation_id', conversation_id).execute()
             
             # Puis la conversation
-            self.client.table('conversations').delete().eq('id', conversation_id).execute()
+            db_client.table('conversations').delete().eq('id', conversation_id).execute()
         except Exception as e:
             print(f"Erreur lors de la suppression de la conversation: {e}")
             raise
